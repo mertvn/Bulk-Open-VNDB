@@ -76,6 +76,9 @@ async function OpenLastUrls() {
     if (egsUrl !== '' && openEGS) {
       GM_openInTab(egsUrl, false);
     }
+
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => setTimeout(r, 3000));
   }
 
   const button = document.querySelector('#BulkOpenVNDBAndEGSButton');
