@@ -6,7 +6,7 @@ Only works on VN and Char search pages.
 
 Only works on Grid display mode.
 
-Only tested on Firefox (78.8.0esr) with ViolentMonkey.
+Only tested on Firefox (78.8.0esr) with Violentmonkey.
 
 Waits 3 seconds between opening new tabs in order to not get rate-limited.
 
