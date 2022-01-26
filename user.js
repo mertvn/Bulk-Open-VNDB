@@ -4,6 +4,7 @@
 // @match       https://vndb.org/c
 // @version     0.1
 // @author      mertvn
+// @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
 // @grant       GM_getValue
 // @grant       GM_setValue
