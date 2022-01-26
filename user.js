@@ -3,6 +3,7 @@
 // @match       https://vndb.org/v
 // @match       https://vndb.org/c
 // @version     0.1
+// @author      mertvn
 // @grant       GM_openInTab
 // @grant       GM_getValue
 // @grant       GM_setValue
