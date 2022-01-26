@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-return-assign */
 // ==UserScript==
 // @name        Bulk Open VNDB
 // @match       https://vndb.org/v
@@ -10,6 +8,9 @@
 // @grant       GM_setValue
 // @run-at      document-idle
 // ==/UserScript==
+
+/* eslint-disable no-console */
+/* eslint-disable no-return-assign */
 
 function addButton(text, onclick, cssObj, id) {
   const button = document.createElement('button');
