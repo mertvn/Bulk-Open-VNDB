@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 /* eslint-disable no-return-assign */
-/* eslint-disable no-alert */
 // ==UserScript==
 // @name        Bulk Open VNDB
-// @include     *
+// @match       https://vndb.org/v
+// @match       https://vndb.org/c
 // @version     0.1
 // @grant       GM_openInTab
 // @grant       GM_getValue
