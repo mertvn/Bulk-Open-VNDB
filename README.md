@@ -21,3 +21,4 @@ A fallback to the first rule is observed if the more specific rules yield no res
 * Bypass spoiler restrictions for chars.
 * Check if it's possible to grab EGS urls from the VNDB tab we open.
 * Open Char page option.
+* Remember settings (contracted to rampaa).
