@@ -4,7 +4,7 @@
 // @match       https://vndb.org/c
 // @match       https://vndb.org/v?*
 // @match       https://vndb.org/c?*
-// @version     0.2
+// @version     0.3
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -178,6 +178,39 @@ async function getEGSUrls(vndbUrl) {
         egsUrls.push(egsUrl);
       }
     }
+  } else if (egsSelectValue === 'All 18+ Windows releases') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const release of releases) {
+      if (release.children[1].textContent === '18+'
+   && release.children[2].children[0].getAttribute('title') === 'Windows') {
+        const as = [...release.querySelectorAll('a')];
+        console.log({ as });
+        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+        console.log(egsElement);
+
+        if (egsElement) {
+          const egsUrl = egsElement.href;
+          egsUrls.push(egsUrl);
+        }
+      }
+    }
+    // fallback
+    if (egsUrls.length === 0) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const release of releases) {
+        const as = [...release.querySelectorAll('a')];
+        console.log({ as });
+        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+        console.log(egsElement);
+
+        if (egsElement) {
+          const egsUrl = egsElement.href;
+          egsUrls.push(egsUrl);
+
+          break;
+        }
+      }
+    }
   }
 
   if (!duplicateUrls) {
@@ -332,7 +365,7 @@ async function stuff() {
 
   div.appendChild(makeButton('Bulk open', stuff, buttonCSS, 'BulkOpenVNDBAndEGSButton'));
   div.appendChild(document.createElement('br'));
-  div.appendChild(makeSelect(['First release', 'First 18+ Windows release', 'All releases'], 0, select1CSS, 'EGSSelect'));
+  div.appendChild(makeSelect(['First release', 'First 18+ Windows release', 'All releases', 'All 18+ Windows releases'], 0, select1CSS, 'EGSSelect'));
   // div.appendChild(makeSelect(['abc'], 0, select2CSS, ''));
 
   checkboxesDiv.appendChild(makeCheckbox('Open VNDB', stuff, true, 'VNDBCheckbox'));
