@@ -15,7 +15,7 @@ The combobox is for selecting what rule should be applied for finding the URL(s)
 
 A fallback to the first rule is observed if the more specific rules yield no results.
 
-## [Install](https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js)
+## [Install](https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/bulk-open-vndb.user.js)
 
 ### TODO
 * Bypass spoiler restrictions for chars.
