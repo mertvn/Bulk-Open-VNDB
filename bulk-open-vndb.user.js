@@ -2,7 +2,9 @@
 // @name        Bulk Open VNDB
 // @match       https://vndb.org/v
 // @match       https://vndb.org/c
-// @version     0.1
+// @match       https://vndb.org/v?*
+// @match       https://vndb.org/c?*
+// @version     0.2
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -14,83 +16,224 @@
 /* eslint-disable no-console */
 /* eslint-disable no-return-assign */
 
-function addButton(text, onclick, cssObj, id) {
+function makeButton(text, onclick, cssObj, id) {
   const button = document.createElement('button');
   const btnStyle = button.style;
-  document.body.appendChild(button);
   button.id = id;
   button.innerHTML = text;
   button.onclick = onclick;
-  btnStyle.position = 'absolute';
   Object.keys(cssObj).forEach((key) => btnStyle[key] = cssObj[key]);
   return button;
 }
 
-async function getEGSUrl(vndbUrl) {
+function makeSelect(options, defaultIndex, cssObj, id) {
+  const select = document.createElement('select');
+  const selectStyle = select.style;
+  select.id = id;
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const option of options) {
+    const opt = document.createElement('option');
+    opt.text = option;
+    select.add(opt);
+  }
+
+  select.options[defaultIndex].defaultSelected = true;
+  Object.keys(cssObj).forEach((key) => selectStyle[key] = cssObj[key]);
+  return select;
+}
+
+function makeCheckbox(text, checked, cssObj, id) {
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.name = text;
+  checkbox.checked = checked;
+  checkbox.id = id;
+
+  const label = document.createElement('label');
+  label.htmlFor = text;
+  label.appendChild(document.createTextNode(text));
+  label.style.paddingLeft = '3px';
+
+  const br = document.createElement('br');
+
+  const container = document.createElement('container');
+  const containerStyle = container.style;
+
+  container.appendChild(checkbox);
+  container.appendChild(label);
+  container.appendChild(br);
+
+  Object.keys(cssObj).forEach((key) => containerStyle[key] = cssObj[key]);
+  return container;
+}
+
+async function sleep(ms) {
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+async function tryFetchText(url) {
+  let response = await fetch(url);
+  // eslint-disable-next-line no-undef
+  let tries = GM_getValue('tries', 1);
+
+  while (response.status !== 200) {
+    console.log(response);
+    console.log(tries);
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(3000 * tries);
+    // eslint-disable-next-line no-await-in-loop
+    response = await fetch(url);
+    tries += 4;
+  }
+  if (tries > 1) {
+    tries -= 1;
+    await sleep(2500);
+  }
+
+  // eslint-disable-next-line no-undef
+  GM_setValue('tries', tries);
+
+  return response.text();
+}
+
+async function getEGSUrls(vndbUrl) {
+  const egsSelectValue = document.querySelector('#EGSSelect').value;
+  const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
+  let egsUrls = [];
+
   // alert('getting EGS url');
-  const response = await fetch(vndbUrl);
+  const responseText = await tryFetchText(vndbUrl);
   const parser = new DOMParser();
-  const doc = parser.parseFromString(await response.text(), 'text/html');
+  const doc = parser.parseFromString(responseText, 'text/html');
 
   const allLangs = doc.querySelector('.mainbox.vnreleases').children;
   console.log({ allLangs });
   // different attribute names are used depending on whether you're logged in or not (???)
   const ja = Array.from(allLangs).find((v) => v.getAttribute('data-save-id') === 'vnlang-ja' || v.getAttribute('data-remember-id') === 'vnlang-ja');
   console.log({ ja });
-  const releases = ja.querySelector('tbody');
+  const releases = ja.querySelector('tbody').children;
   console.log({ releases });
-  const abbrs = releases.querySelectorAll('abbr');
-  console.log({ abbrs });
-  const completeReleases = Array.from(abbrs).filter((v) => v.getAttribute('title') === 'complete');
-  console.log({ completeReleases });
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const completeRelease of completeReleases) {
-    const as = completeRelease.parentElement.parentElement.querySelectorAll('a');
-    console.log({ as });
-    const egsElement = Array.from(as).find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
-    console.log(egsElement);
+  if (egsSelectValue === 'First release') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const release of releases) {
+      const as = [...release.querySelectorAll('a')];
+      console.log({ as });
+      const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+      console.log(egsElement);
 
-    if (egsElement) {
-      const egsUrl = egsElement.href;
-      console.log(egsUrl);
+      if (egsElement) {
+        const egsUrl = egsElement.href;
+        egsUrls.push(egsUrl);
 
-      return egsUrl;
+        break;
+      }
+    }
+  } else if (egsSelectValue === 'First 18+ Windows release') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const release of releases) {
+      if (release.children[1].textContent === '18+'
+       && release.children[2].children[0].getAttribute('title') === 'Windows') {
+        const as = [...release.querySelectorAll('a')];
+        console.log({ as });
+        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+        console.log(egsElement);
+
+        if (egsElement) {
+          const egsUrl = egsElement.href;
+          egsUrls.push(egsUrl);
+
+          break;
+        }
+      }
+    }
+    // fallback
+    if (egsUrls.length === 0) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const release of releases) {
+        const as = [...release.querySelectorAll('a')];
+        console.log({ as });
+        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+        console.log(egsElement);
+
+        if (egsElement) {
+          const egsUrl = egsElement.href;
+          egsUrls.push(egsUrl);
+
+          break;
+        }
+      }
+    }
+  } else if (egsSelectValue === 'All releases') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const release of releases) {
+      const as = [...release.querySelectorAll('a')];
+      console.log({ as });
+      const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+      console.log(egsElement);
+
+      if (egsElement) {
+        const egsUrl = egsElement.href;
+        egsUrls.push(egsUrl);
+      }
     }
   }
 
-  return '';
+  if (!duplicateUrls) {
+    egsUrls = [...new Set(egsUrls)];
+  }
+
+  return egsUrls;
 }
 
-async function OpenLastUrls() {
-  const openVNDB = true;
-  const openEGS = true;
+async function openLastUrls() {
+  const button = document.querySelector('#BulkOpenVNDBAndEGSButton');
+  const openVNDB = document.querySelector('#VNDBCheckbox').checked;
+  const openEGS = document.querySelector('#EGSCheckbox').checked;
+  const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
 
-  const vndbUrls = GM_getValue('LastUrls', []);
+  // eslint-disable-next-line no-undef
+  let vndbUrls = GM_getValue('lastUrls', []);
+  const openedEgsUrls = [];
+  if (!duplicateUrls) {
+    vndbUrls = [...new Set(vndbUrls)];
+  }
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const vndbUrl of vndbUrls) {
-    const egsUrl = await getEGSUrl(vndbUrl);
+  for (let index = 0; index < vndbUrls.length; index += 1) {
+    const vndbUrl = vndbUrls[index];
     // alert('opening tabs');
-    if (vndbUrl !== '' && openVNDB) {
+    button.textContent = `Opening tabs...${index}`;
+    if (openVNDB && vndbUrl !== '') {
+      // eslint-disable-next-line no-undef
       GM_openInTab(vndbUrl, false);
     }
 
-    if (egsUrl !== '' && openEGS) {
-      GM_openInTab(egsUrl, false);
-    }
+    if (openEGS) {
+      const egsUrls = await getEGSUrls(vndbUrl);
 
-    // eslint-disable-next-line no-await-in-loop
-    await new Promise((r) => setTimeout(r, 3000));
+      // eslint-disable-next-line no-restricted-syntax
+      for (const egsUrl of egsUrls) {
+        if (egsUrl !== '') {
+          if (duplicateUrls || !openedEgsUrls.includes(egsUrl)) {
+            openedEgsUrls.push(egsUrl);
+
+            // eslint-disable-next-line no-undef
+            GM_openInTab(egsUrl, false);
+          }
+        }
+      }
+    }
   }
 
-  const button = document.querySelector('#BulkOpenVNDBAndEGSButton');
-  button.textContent = 'Bulk open VNDB & EGS';
+  button.textContent = 'Bulk open';
   button.onclick = stuff;
 }
 
 async function stuff() {
-  GM_setValue('LastUrls', []);
+  const button = document.querySelector('#BulkOpenVNDBAndEGSButton');
+  // eslint-disable-next-line no-undef
+  GM_setValue('lastUrls', []);
 
   let page = null; // 0: VN, 1: Char
   if (document.location.pathname === '/v') {
@@ -111,8 +254,8 @@ async function stuff() {
   const { children } = document.querySelector(selection);
 
   let vndbUrls = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const child of children) {
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index];
     if (page === 0) {
       const a = child.querySelector('a');
       const { href } = a;
@@ -120,29 +263,81 @@ async function stuff() {
       vndbUrls.push(href);
       console.log(vndbUrls);
     } else if (page === 1) {
-      const response = await fetch(child.href);
+      button.textContent = `Fetching...${index}`;
+      const responseText = await tryFetchText(child.href);
       const parser = new DOMParser();
-      const doc = parser.parseFromString(await response.text(), 'text/html');
+      const doc = parser.parseFromString(responseText, 'text/html');
 
       const tdAnchors = [...doc.querySelectorAll('td > a')];
       console.log(tdAnchors);
-      const vnAnchors = Array.from(tdAnchors).filter((v) => v.getAttribute('href').startsWith('/v'));
+      const vnAnchors = tdAnchors.filter((v) => v.getAttribute('href').startsWith('/v'));
       console.log(vnAnchors);
       vndbUrls = vndbUrls.concat(vnAnchors.map((a) => a.href));
       console.log(vndbUrls);
     }
   }
 
-  GM_setValue('LastUrls', vndbUrls);
+  // eslint-disable-next-line no-undef
+  GM_setValue('lastUrls', vndbUrls);
 
-  const button = document.querySelector('#BulkOpenVNDBAndEGSButton');
-  button.textContent = `Press again to open ${vndbUrls.length}+ tabs`;
-  button.onclick = OpenLastUrls;
+  let tabCount = vndbUrls.length;
+  const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
+  if (!duplicateUrls) {
+    tabCount = [...new Set(vndbUrls)].length;
+  }
+  button.textContent = `Press again to open ${tabCount}+ tabs`;
+  button.onclick = openLastUrls;
 }
 
 (function main() {
-  const cssObj = {
+  if (!document.querySelector('.mainbox.vngrid') && !document.querySelector('.mainbox.charbgrid')) {
+    const button = makeButton('Can\'t find grid', null, {
+      position: 'absolute', top: '25%', right: '3%', 'z-index': 3, color: 'grey',
+    }, 'NoGridButton');
+    button.disabled = true;
+    document.body.appendChild(button);
+
+    return;
+  }
+
+  const divCSS = {
     position: 'absolute', top: '25%', right: '3%', 'z-index': 3,
   };
-  addButton('Bulk open VNDB & EGS', stuff, cssObj, 'BulkOpenVNDBAndEGSButton');
+
+  const buttonCSS = {
+    margin: '2px',
+  };
+  const select1CSS = {
+    margin: '2px',
+  };
+  // const select2CSS = {
+  //   margin: '2px',
+  // };
+  const checkboxesDivCSS = {
+    margin: '2px',
+
+  };
+  const checkboxCSS = {
+
+  };
+
+  const div = document.createElement('div');
+  div.id = 'BulkOpenVNDBAndEGSDiv';
+  Object.keys(divCSS).forEach((key) => div.style[key] = divCSS[key]);
+  document.body.appendChild(div);
+
+  const checkboxesDiv = document.createElement('div');
+  checkboxesDiv.id = 'checkboxesDiv';
+  Object.keys(checkboxesDivCSS).forEach((key) => checkboxesDiv.style[key] = checkboxesDivCSS[key]);
+
+  div.appendChild(makeButton('Bulk open', stuff, buttonCSS, 'BulkOpenVNDBAndEGSButton'));
+  div.appendChild(document.createElement('br'));
+  div.appendChild(makeSelect(['First release', 'First 18+ Windows release', 'All releases'], 0, select1CSS, 'EGSSelect'));
+  // div.appendChild(makeSelect(['abc'], 0, select2CSS, ''));
+
+  checkboxesDiv.appendChild(makeCheckbox('Open VNDB', stuff, true, 'VNDBCheckbox'));
+  checkboxesDiv.appendChild(makeCheckbox('Open EGS', stuff, true, 'EGSCheckbox'));
+  checkboxesDiv.appendChild(makeCheckbox('Allow duplicate urls', false, checkboxCSS, 'DuplicateUrlsCheckbox'));
+
+  div.appendChild(checkboxesDiv);
 }());

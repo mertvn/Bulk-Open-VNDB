@@ -6,12 +6,17 @@ Only works on VN and Char search pages.
 
 Only works on Grid display mode.
 
-Only tested on Firefox (78.8.0esr) with Violentmonkey.
+Only tested on Firefox, with Violentmonkey and Tampermonkey.
 
-Waits 3 seconds between opening new tabs in order to not get rate-limited.
+Tries to work around the rate-limit but it's not perfect, so the recommended max grid size is 25 for now.
 
-## TODO
+The combobox is for selecting what rule should be applied for finding the URL(s) for EGS pages.
+
+A fallback to the first rule is observed if the more specific rules yield no results.
+
+## [Install](https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js)
+
+### TODO
 * Bypass spoiler restrictions for chars.
 * Check if it's possible to grab EGS urls from the VNDB tab we open.
-* Fix getting rate-limited for char pages (^ might fix it).
-* Better logic for selecting the correct EGS release (Right now we select the first complete release with an EGS link).
+* Open Char page option.
