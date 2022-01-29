@@ -3,7 +3,7 @@
 
 Opens VNDB and EGS pages for VNs found using the VNDB search pages.
 
-Only works on VN and Char search pages.
+Only works on VN, Char, Trait, and Tag search pages.
 
 Only works on Grid display mode.
 

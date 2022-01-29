@@ -4,7 +4,9 @@
 // @match       https://vndb.org/c
 // @match       https://vndb.org/v?*
 // @match       https://vndb.org/c?*
-// @version     0.4
+// @match       https://vndb.org/i*
+// @match       https://vndb.org/g*
+// @version     0.5
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -119,7 +121,6 @@ function egs0(releases) {
 
 async function getEGSUrls(vndbUrl) {
   const egsSelectValue = document.querySelector('#EGSSelect').value;
-  const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
   let egsUrls = [];
 
   // alert('getting EGS url');
@@ -194,9 +195,11 @@ async function getEGSUrls(vndbUrl) {
     }
   }
 
-  if (!duplicateUrls) {
-    egsUrls = [...new Set(egsUrls)];
-  }
+  // unnecessary rn
+  // const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
+  // if (!duplicateUrls) {
+  //   egsUrls = [...new Set(egsUrls)];
+  // }
 
   return egsUrls;
 }
@@ -249,11 +252,11 @@ async function stuff() {
   // eslint-disable-next-line no-undef
   GM_setValue('lastUrls', []);
 
-  let page = null; // 0: VN, 1: Char
-  if (document.location.pathname === '/v') {
+  let page = null; // 0: VNs and Tags, 1: Chars and Traits
+  if (document.location.pathname === '/v' || document.location.pathname.startsWith('/g')) {
     page = 0;
   } else if
-  (document.location.pathname === '/c') {
+  (document.location.pathname === '/c' || document.location.pathname.startsWith('/i')) {
     page = 1;
   }
 
@@ -315,7 +318,7 @@ async function stuff() {
   }
 
   const divCSS = {
-    position: 'absolute', top: '25%', right: '3%', 'z-index': 3,
+    position: 'absolute', top: '22%', right: '3%', 'z-index': 3,
   };
 
   const buttonCSS = {
@@ -324,9 +327,6 @@ async function stuff() {
   const select1CSS = {
     margin: '2px',
   };
-  // const select2CSS = {
-  //   margin: '2px',
-  // };
   const checkboxesDivCSS = {
     margin: '2px',
 
@@ -347,7 +347,6 @@ async function stuff() {
   div.appendChild(makeButton('Bulk open', stuff, buttonCSS, 'BulkOpenVNDBAndEGSButton'));
   div.appendChild(document.createElement('br'));
   div.appendChild(makeSelect(['First release', 'First 18+ Windows release', 'All releases', 'All 18+ Windows releases'], 0, select1CSS, 'EGSSelect'));
-  // div.appendChild(makeSelect(['abc'], 0, select2CSS, ''));
 
   checkboxesDiv.appendChild(makeCheckbox('Open VNDB', stuff, true, 'VNDBCheckbox'));
   checkboxesDiv.appendChild(makeCheckbox('Open EGS', stuff, true, 'EGSCheckbox'));
