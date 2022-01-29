@@ -4,7 +4,7 @@
 // @match       https://vndb.org/c
 // @match       https://vndb.org/v?*
 // @match       https://vndb.org/c?*
-// @version     0.3
+// @version     0.4
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -97,6 +97,26 @@ async function tryFetchText(url) {
   return response.text();
 }
 
+function egs0(releases) {
+  const egsUrls = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const release of releases) {
+    const as = [...release.querySelectorAll('a')];
+    console.log({ as });
+    const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
+    console.log(egsElement);
+
+    if (egsElement) {
+      const egsUrl = egsElement.href;
+      egsUrls.push(egsUrl);
+
+      break;
+    }
+  }
+
+  return egsUrls;
+}
+
 async function getEGSUrls(vndbUrl) {
   const egsSelectValue = document.querySelector('#EGSSelect').value;
   const duplicateUrls = document.querySelector('#DuplicateUrlsCheckbox').checked;
@@ -116,20 +136,7 @@ async function getEGSUrls(vndbUrl) {
   console.log({ releases });
 
   if (egsSelectValue === 'First release') {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const release of releases) {
-      const as = [...release.querySelectorAll('a')];
-      console.log({ as });
-      const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
-      console.log(egsElement);
-
-      if (egsElement) {
-        const egsUrl = egsElement.href;
-        egsUrls.push(egsUrl);
-
-        break;
-      }
-    }
+    egsUrls = egs0(releases);
   } else if (egsSelectValue === 'First 18+ Windows release') {
     // eslint-disable-next-line no-restricted-syntax
     for (const release of releases) {
@@ -150,20 +157,7 @@ async function getEGSUrls(vndbUrl) {
     }
     // fallback
     if (egsUrls.length === 0) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const release of releases) {
-        const as = [...release.querySelectorAll('a')];
-        console.log({ as });
-        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
-        console.log(egsElement);
-
-        if (egsElement) {
-          const egsUrl = egsElement.href;
-          egsUrls.push(egsUrl);
-
-          break;
-        }
-      }
+      egsUrls = egs0(releases);
     }
   } else if (egsSelectValue === 'All releases') {
     // eslint-disable-next-line no-restricted-syntax
@@ -196,20 +190,7 @@ async function getEGSUrls(vndbUrl) {
     }
     // fallback
     if (egsUrls.length === 0) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const release of releases) {
-        const as = [...release.querySelectorAll('a')];
-        console.log({ as });
-        const egsElement = as.find((v) => v.getAttribute('href').startsWith('https://erogamescape'));
-        console.log(egsElement);
-
-        if (egsElement) {
-          const egsUrl = egsElement.href;
-          egsUrls.push(egsUrl);
-
-          break;
-        }
-      }
+      egsUrls = egs0(releases);
     }
   }
 
