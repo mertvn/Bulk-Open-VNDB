@@ -318,7 +318,7 @@ async function stuff() {
   }
 
   const divCSS = {
-    position: 'absolute', top: '22%', right: '3%', 'z-index': 3,
+    position: 'absolute', top: '23%', right: '3%', 'z-index': 3,
   };
 
   const buttonCSS = {
