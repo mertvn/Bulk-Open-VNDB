@@ -6,7 +6,7 @@
 // @match       https://vndb.org/c?*
 // @match       https://vndb.org/i*
 // @match       https://vndb.org/g*
-// @version     0.5
+// @version     0.6
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -57,14 +57,11 @@ function makeCheckbox(text, checked, cssObj, id) {
   label.appendChild(document.createTextNode(text));
   label.style.paddingLeft = '3px';
 
-  const br = document.createElement('br');
-
   const container = document.createElement('container');
   const containerStyle = container.style;
 
   container.appendChild(checkbox);
   container.appendChild(label);
-  container.appendChild(br);
 
   Object.keys(cssObj).forEach((key) => containerStyle[key] = cssObj[key]);
   return container;
@@ -318,7 +315,7 @@ async function stuff() {
   }
 
   const divCSS = {
-    position: 'absolute', top: '23%', right: '3%', 'z-index': 3,
+    position: 'absolute', top: '22%', right: '3%', 'z-index': 3,
   };
 
   const buttonCSS = {
@@ -332,7 +329,7 @@ async function stuff() {
 
   };
   const checkboxCSS = {
-
+    margin: '2px',
   };
 
   const div = document.createElement('div');
@@ -348,8 +345,10 @@ async function stuff() {
   div.appendChild(document.createElement('br'));
   div.appendChild(makeSelect(['First release', 'First 18+ Windows release', 'All releases', 'All 18+ Windows releases'], 0, select1CSS, 'EGSSelect'));
 
-  checkboxesDiv.appendChild(makeCheckbox('Open VNDB', stuff, true, 'VNDBCheckbox'));
-  checkboxesDiv.appendChild(makeCheckbox('Open EGS', stuff, true, 'EGSCheckbox'));
+  checkboxesDiv.appendChild(makeCheckbox('VNDB', true, checkboxCSS, 'VNDBCheckbox'));
+  checkboxesDiv.appendChild(makeCheckbox('EGS', true, checkboxCSS, 'EGSCheckbox'));
+  const br = document.createElement('br');
+  checkboxesDiv.appendChild(br);
   checkboxesDiv.appendChild(makeCheckbox('Allow duplicate urls', false, checkboxCSS, 'DuplicateUrlsCheckbox'));
 
   div.appendChild(checkboxesDiv);
