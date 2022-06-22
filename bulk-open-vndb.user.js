@@ -6,7 +6,7 @@
 // @match       https://vndb.org/c?*
 // @match       https://vndb.org/i*
 // @match       https://vndb.org/g*
-// @version     0.6
+// @version     0.7
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -127,10 +127,21 @@ async function getEGSUrls(vndbUrl) {
 
   const allLangs = doc.querySelector('.mainbox.vnreleases').children;
   console.log({ allLangs });
-  // different attribute names are used depending on whether you're logged in or not (???)
-  const ja = Array.from(allLangs).find((v) => v.getAttribute('data-save-id') === 'vnlang-ja' || v.getAttribute('data-remember-id') === 'vnlang-ja');
-  console.log({ ja });
-  const releases = ja.querySelector('tbody').children;
+
+  let ja = null;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const lang of allLangs) {
+    console.log({ lang });
+    const abc = lang.querySelector('summary > abbr.icons.lang.ja');
+    if (abc) {
+      console.log({ abc });
+      ja = abc;
+    }
+  }
+
+  if (!ja) return '';
+
+  const releases = ja.parentNode.parentNode.querySelector('tbody').children;
   console.log({ releases });
 
   if (egsSelectValue === 'First release') {
@@ -309,7 +320,7 @@ async function stuff() {
       position: 'absolute', top: '25%', right: '3%', 'z-index': 3, color: 'grey',
     }, 'NoGridButton');
     button.disabled = true;
-    document.body.appendChild(button);
+    // document.body.appendChild(button); // uncomment if debugging
 
     return;
   }
@@ -317,7 +328,6 @@ async function stuff() {
   const divCSS = {
     position: 'absolute', top: '22%', right: '3%', 'z-index': 3,
   };
-
   const buttonCSS = {
     margin: '2px',
   };
@@ -326,7 +336,6 @@ async function stuff() {
   };
   const checkboxesDivCSS = {
     margin: '2px',
-
   };
   const checkboxCSS = {
     margin: '2px',
