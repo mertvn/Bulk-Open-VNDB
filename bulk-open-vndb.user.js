@@ -6,7 +6,7 @@
 // @match       https://vndb.org/c?*
 // @match       https://vndb.org/i*
 // @match       https://vndb.org/g*
-// @version     0.7
+// @version     0.8
 // @author      mertvn
 // @downloadURL https://raw.githubusercontent.com/mertvn/Bulk-Open-VNDB/master/user.js
 // @grant       GM_openInTab
@@ -125,14 +125,14 @@ async function getEGSUrls(vndbUrl) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(responseText, 'text/html');
 
-  const allLangs = doc.querySelector('.mainbox.vnreleases').children;
+  const allLangs = doc.querySelector('.vnreleases').children;
   console.log({ allLangs });
 
   let ja = null;
   // eslint-disable-next-line no-restricted-syntax
   for (const lang of allLangs) {
     console.log({ lang });
-    const abc = lang.querySelector('summary > abbr.icons.lang.ja');
+    const abc = lang.querySelector('summary > abbr.icon-lang-ja');
     if (abc) {
       console.log({ abc });
       ja = abc;
@@ -270,10 +270,10 @@ async function stuff() {
 
   let selection = '';
   if (page === 0) {
-    selection = '.mainbox.vngrid';
+    selection = '.vngrid';
   } else if
   (page === 1) {
-    selection = '.mainbox.charbgrid';
+    selection = '.charbgrid';
   }
 
   const { children } = document.querySelector(selection);
@@ -315,7 +315,7 @@ async function stuff() {
 }
 
 (function main() {
-  if (!document.querySelector('.mainbox.vngrid') && !document.querySelector('.mainbox.charbgrid')) {
+  if (!document.querySelector('.vngrid') && !document.querySelector('.charbgrid')) {
     const button = makeButton('Can\'t find grid', null, {
       position: 'absolute', top: '25%', right: '3%', 'z-index': 3, color: 'grey',
     }, 'NoGridButton');
